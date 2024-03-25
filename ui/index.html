@@ -1,0 +1,35 @@
+{{block "index" .}}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>DB Project</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width-device-width, initial-scale=1">
+		<script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
+		  <script src="https://cdn.tailwindcss.com"></script>
+	</head>
+	<body>
+		<h1 class="text-center text-5xl">Orders</h1>
+		<form hx-post="/createOrder" hx-target="#orders">
+			<label for="method">Order Method:</label>
+			<input class="border p-2" type="text" name="method">
+		</form>
+
+		<hr>
+
+		<div class="mt-5 flex gap-2" id="orders">
+			{{template "orders" .}}
+		</div>
+	</body>
+</html>
+{{end}}
+
+{{block "orders" .}}
+	{{range .Orders}}
+		<div class="border">
+			<h1>Order {{.Id}}</h1>
+			<h2>Method: {{ .Method }}</h2>
+			<button class="border bg-red-500 px-3 py-2" hx-delete="/deleteOrder/{{.Id}}" hx-target="#orders">Delete</button>
+		</div>
+	{{end}}
+{{end}}
