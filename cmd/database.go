@@ -21,7 +21,7 @@ func NewDBConfig(host, dbtype, dbname, user, password string) *DBConfig {
 
 type DB interface {
 	GetAllOrders() ([]*Order, error)
-	CreateOrder(string) error
+	CreateOrder(string) (*Order, error)
 	DeleteOrder(int) error
 }
 
@@ -29,20 +29,20 @@ type Store struct {
 	db *sql.DB
 }
 
-func InitDB(config *DBConfig) error {
+func InitDB(config *DBConfig) (*Store, error) {
 	connectionString := fmt.Sprintf("Server=%s;Database=%s;User Id=%s;Password=%s;", config.host, config.dbname, config.user, config.password)
 	db, err := sql.Open(config.dbtype, connectionString)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := db.Ping(); err != nil {
-		return err
+		return nil, err
 	}
 
-	store = &Store{db: db}
+	store := &Store{db: db}
 
-	return nil
+	return store, nil
 }
 
 func (s *Store) GetAllOrders() ([]*Order, error) {
@@ -65,13 +65,18 @@ func (s *Store) GetAllOrders() ([]*Order, error) {
 	return orders, nil
 }
 
-func (s *Store) CreateOrder(method string) error {
-	_, err := s.db.Exec("INSERT INTO Orders (Method) VALUES (@method)", sql.Named("Method", method))
+func (s *Store) CreateOrder(method string) (*Order, error) {
+	query := "INSERT INTO Orders (Method) OUTPUT INSERTED.ID VALUES (@method)"
+
+	var createdID int
+	err := s.db.QueryRow(query, sql.Named("Method", method)).Scan(&createdID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	order := &Order{Id: createdID, Method: method}
+
+	return order, nil
 }
 
 func (s *Store) DeleteOrder(id int) error {

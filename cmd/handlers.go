@@ -14,29 +14,58 @@ type PageData struct {
 	Orders []*Order
 }
 
-func HandleHome(c echo.Context) error {
-	orders, err := store.GetAllOrders()
+type Server struct {
+	Data  PageData
+	store DB
+}
+
+func NewServer(store *Store) *Server {
+	return &Server{
+		store: store,
+		Data:  PageData{},
+	}
+}
+
+func (s *Server) Run() {
+	e := echo.New()
+	e.Renderer = NewTemplate()
+
+	e.GET("/", s.HandleHome)
+	e.GET("/orders", s.HandleGetAllOrders)
+	e.GET("/createOrder", s.HandleCreateOrder)
+
+	e.POST("/createOrder", s.HandleCreateOrder)
+	e.DELETE("/deleteOrder/:id", s.HandleDeleteOrder)
+
+	e.Logger.Fatal(e.Start(":3000"))
+}
+
+func (s *Server) HandleHome(c echo.Context) error {
+
+	orders, err := s.store.GetAllOrders()
 	if err != nil {
 		return fmt.Errorf("Error Getting Orders %s", err)
 	}
 
-	data := PageData{Orders: orders}
+	s.Data.Orders = orders
+	data := s.Data
 
 	return c.Render(http.StatusOK, "index", data)
 }
 
-func HandleGetAllOrders(c echo.Context) error {
-	orders, err := store.GetAllOrders()
+func (s *Server) HandleGetAllOrders(c echo.Context) error {
+	orders, err := s.store.GetAllOrders()
 	if err != nil {
 		fmt.Println("Error Getting Orders ", err)
 	}
 
-	data := PageData{Orders: orders}
+	s.Data.Orders = orders
+	data := s.Data
 
 	return c.Render(http.StatusOK, "orders", data)
 }
 
-func HandleCreateOrder(c echo.Context) error {
+func (s *Server) HandleCreateOrder(c echo.Context) error {
 	r := c.Request()
 	if r.Method == "GET" {
 		return c.Render(http.StatusOK, "CreateOrder", nil)
@@ -44,16 +73,18 @@ func HandleCreateOrder(c echo.Context) error {
 
 	if r.Method == "POST" {
 		method := c.FormValue("method")
-		err := store.CreateOrder(method)
+		order, err := s.store.CreateOrder(method)
 		if err != nil {
 			return err
 		}
 
-		orders, err := store.GetAllOrders()
-		if err != nil {
-			return fmt.Errorf("Error Getting Orders %s", err)
-		}
-		data := PageData{Orders: orders}
+		// orders, err := s.store.GetAllOrders()
+		// if err != nil {
+		// 	return fmt.Errorf("Error Getting Orders %s", err)
+		// }
+
+		s.Data.Orders = append(s.Data.Orders, order)
+		data := s.Data
 
 		return c.Render(http.StatusOK, "orders", data)
 	}
@@ -61,21 +92,18 @@ func HandleCreateOrder(c echo.Context) error {
 	return nil
 }
 
-func HandleDeleteOrder(c echo.Context) error {
+func (s *Server) HandleDeleteOrder(c echo.Context) error {
 	id := c.Param("id")
 	orderId, _ := strconv.Atoi(id)
 
 	fmt.Println("Deleting Order With Id: ", orderId)
 
-	err := store.DeleteOrder(orderId)
+	err := s.store.DeleteOrder(orderId)
 	if err != nil {
 		return fmt.Errorf("Error deleting: %s", err)
 	}
 
-	orders, err := store.GetAllOrders()
-	if err != nil {
-		return fmt.Errorf("Error Getting Orders %s", err)
-	}
+	orders := s.Data.Orders
 
 	for i, order := range orders {
 		if order.Id == orderId {
@@ -84,7 +112,8 @@ func HandleDeleteOrder(c echo.Context) error {
 		}
 	}
 
-	data := PageData{Orders: orders}
+	s.Data.Orders = orders
+	data := s.Data
 
 	return c.Render(http.StatusOK, "orders", data)
 }

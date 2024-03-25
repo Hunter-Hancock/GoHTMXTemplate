@@ -5,13 +5,9 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/labstack/echo/v4"
 )
 
 func main() {
-	e := echo.New()
-	e.Renderer = NewTemplate()
-
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -24,14 +20,12 @@ func main() {
 	dbpass := os.Getenv("DBPASS")
 
 	config := NewDBConfig(host, dbtype, dbname, dbuser, dbpass)
-	InitDB(config)
+	store, err := InitDB(config)
+	if err != nil {
+		log.Fatal("Cannot connect to database")
+		return
+	}
 
-	e.GET("/", HandleHome)
-	e.GET("/orders", HandleGetAllOrders)
-	e.GET("/createOrder", HandleCreateOrder)
-
-	e.POST("/createOrder", HandleCreateOrder)
-	e.DELETE("/deleteOrder/:id", HandleDeleteOrder)
-
-	e.Logger.Fatal(e.Start(":3000"))
+	server := NewServer(store)
+	server.Run()
 }
