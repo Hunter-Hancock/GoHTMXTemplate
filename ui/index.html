@@ -9,24 +9,24 @@
 		  <script src="https://cdn.tailwindcss.com"></script>
 	</head>
 	<body>
-		<h1 class="text-center text-5xl">Orders</h1>
-		<form hx-post="/createOrder" hx-target="#orders">
-			<label for="method">Order Method:</label>
-			<input class="border p-2" type="text" name="method">
-		</form>
-
-		<hr>
-
-		<div class="mt-5 flex gap-2" id="orders">
-			{{template "orders" .}}
-		</div>
+		<main class="flex min-h-screen flex-col items-center">
+			<h1 class="text-5xl">Orders</h1>
+			<form class="" hx-post="/createOrder" hx-target="#orders">
+				<label for="method">Order Method:</label>
+				<input class="border p-2" type="text" name="method">
+			</form>
+			
+			<div class="mt-10 grid grid-cols-1 gap-20 md:grid-cols-2 lg:grid-cols-6" id="orders">
+				{{template "orders" .}}
+			</div>
+		</main>
 	</body>
 </html>
 {{end}}
 
 {{block "orders" .}}
 	{{range .Orders}}
-		<div class="border">
+		<div class="flex flex-col border p-2">
 			<h1>Order {{.Id}}</h1>
 			<h2>Method: {{ .Method }}</h2>
 			<button class="border bg-red-500 px-3 py-2" hx-delete="/deleteOrder/{{.Id}}" hx-target="#orders">Delete</button>

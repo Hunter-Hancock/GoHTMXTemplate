@@ -8,21 +8,19 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var store DB
-
 type PageData struct {
 	Orders []*Order
 }
 
 type Server struct {
-	Data  PageData
+	Data  *PageData
 	store DB
 }
 
 func NewServer(store *Store) *Server {
 	return &Server{
 		store: store,
-		Data:  PageData{},
+		Data:  &PageData{},
 	}
 }
 
@@ -41,7 +39,6 @@ func (s *Server) Run() {
 }
 
 func (s *Server) HandleHome(c echo.Context) error {
-
 	orders, err := s.store.GetAllOrders()
 	if err != nil {
 		return fmt.Errorf("Error Getting Orders %s", err)
@@ -77,11 +74,6 @@ func (s *Server) HandleCreateOrder(c echo.Context) error {
 		if err != nil {
 			return err
 		}
-
-		// orders, err := s.store.GetAllOrders()
-		// if err != nil {
-		// 	return fmt.Errorf("Error Getting Orders %s", err)
-		// }
 
 		s.Data.Orders = append(s.Data.Orders, order)
 		data := s.Data
