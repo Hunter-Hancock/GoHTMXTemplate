@@ -1,0 +1,46 @@
+{{ block "employee" .}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
+	<script src="https://cdn.tailwindcss.com"></script>
+    <title>User Information Form</title>
+</head>
+<body>
+    <h2>User Information Form</h2>
+	{{template "CreateEmployee" .}}
+</body>
+</html>
+{{end}}
+
+{{ block "CreateEmployee" .}}
+    <form hx-post="/createEmployee">
+        <label for="first_name">First Name:</label><br>
+	<input type="text" value="{{.FirstName}}" id="first_name" name="first_name" maxlength="50" required><br>
+        
+        <label for="last_name">Last Name:</label><br>
+        <input type="text" id="last_name" name="last_name" maxlength="50" required><br>
+        
+        <label for="street">Street:</label><br>
+        <input type="text" id="street" name="street" maxlength="100" required><br>
+        
+        <label for="city">City:</label><br>
+        <input type="text" id="city" name="city" maxlength="50" required><br>
+        
+        <label for="state">State:</label><br>
+        <input type="text" id="state" name="state" maxlength="30" required><br>
+        
+        <label for="zip">Zip:</label><br>
+        <input type="text" id="zip" name="zip" maxlength="8" required><br>
+        
+        <label for="date_of_birth">Date of Birth:</label><br>
+        <input type="datetime-local" id="date_of_birth" name="date_of_birth" required><br>
+        
+        <label for="role">Role:</label><br>
+        <input type="text" id="role" name="role" maxlength="50" required><br>
+        
+        <input type="submit" value="Submit">
+    </form>
+{{end}}

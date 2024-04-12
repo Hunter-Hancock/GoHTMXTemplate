@@ -1,31 +1,20 @@
 package main
 
 import (
-	"log"
-	"os"
+	"fmt"
+	"net/http"
 
-	"github.com/joho/godotenv"
+	"github.com/Hunter-Hancock/dbproject/routes"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+
+	server := &http.Server{
+		Addr:    ":3000",
+		Handler: routes.RegisterRoutes(),
 	}
 
-	host := os.Getenv("DBHOST")
-	dbtype := os.Getenv("DBTYPE")
-	dbname := os.Getenv("DBNAME")
-	dbuser := os.Getenv("DBUSER")
-	dbpass := os.Getenv("DBPASS")
+	fmt.Println("Server Started")
 
-	config := NewDBConfig(host, dbtype, dbname, dbuser, dbpass)
-	store, err := InitDB(config)
-	if err != nil {
-		log.Fatal("Cannot connect to database")
-		return
-	}
-
-	server := NewServer(store)
-	server.Run()
+	server.ListenAndServe()
 }
