@@ -1,14 +1,14 @@
 package app
 
 import (
-	"github.com/Hunter-Hancock/dbproject/api"
 	"github.com/Hunter-Hancock/dbproject/db"
+	"github.com/Hunter-Hancock/dbproject/handler"
 	mw "github.com/Hunter-Hancock/dbproject/middleware"
 )
 
 type Application struct {
 	TestStore   db.TestStore
-	TestHandler *api.TestHandler
+	TestHandler *handler.TestHandler
 	Middleware  mw.MiddleWare
 }
 
@@ -19,7 +19,7 @@ func NewApplication() (*Application, error) {
 	}
 
 	testStore := db.NewSQLTestStore(sql)
-	testHandler := api.NewTestHandler(testStore)
+	testHandler := handler.NewTestHandler(testStore)
 
 	app := &Application{
 		TestStore:   testStore,
